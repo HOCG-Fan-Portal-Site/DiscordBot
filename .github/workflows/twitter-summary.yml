@@ -52,7 +52,7 @@ jobs:
           python cronjobs/generate_ai_summary.py --json twitter_summary.json --output twitter_ai_summary.md --send_discord
       
       - name: Upload summary as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: twitter-summaries
           path: |
