@@ -1,0 +1,61 @@
+name: Twitter Summary Workflow
+
+on:
+  schedule:
+    # 每天早上 8:00 UTC (台灣時間 16:00) 執行
+    - cron: '0 8 * * *'
+  workflow_dispatch:  # 允許手動觸發
+
+jobs:
+  twitter-summary:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Install Chrome and Chrome WebDriver
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+      
+      - name: Get Twitter cookies
+        env:
+          TWITTER_EMAIL: ${{ secrets.TWITTER_EMAIL }}
+          TWITTER_PASSWORD: ${{ secrets.TWITTER_PASSWORD }}
+        run: |
+          python cronjobs/get_twitter_cookies.py
+      
+      - name: Fetch Twitter data
+        run: |
+          python cronjobs/test_twitter_client.py
+      
+      - name: Generate AI summary and send to Discord
+        env:
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          DEEPSEEK_MODEL: ${{ secrets.DEEPSEEK_MODEL }}
+          AI_PROVIDER: "deepseek"
+        run: |
+          python cronjobs/generate_ai_summary.py --json twitter_summary.json --output twitter_ai_summary.md --send_discord
+      
+      - name: Upload summary as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: twitter-summaries
+          path: |
+            twitter_summary.json
+            twitter_summary.md
+            twitter_ai_summary.md
