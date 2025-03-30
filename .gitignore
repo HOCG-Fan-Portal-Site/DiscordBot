@@ -134,3 +134,13 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+/venv/
+
+__pycache__
+
+twitter_cookies.pkl
+twitter_cookies.pkl.json
+twitter_summary.json
+twitter_summary.md
+twitter_ai_summary.md
