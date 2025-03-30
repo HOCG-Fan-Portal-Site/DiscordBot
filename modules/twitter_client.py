@@ -52,6 +52,7 @@ class TwitterClient:
         
         # Cookie 文件路徑
         self.cookie_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'twitter_cookies.pkl')
+        self.cookie_json_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'twitter_cookies.pkl.json')
         
         # 嘗試加載 cookies
         self._cookies = self._load_cookies()
@@ -63,7 +64,14 @@ class TwitterClient:
             List of cookie dictionaries or None if file not found or error
         """
         try:
-            if os.path.exists(self.cookie_file):
+            # 首先嘗試從 JSON 文件加載
+            if os.path.exists(self.cookie_json_file):
+                logger.info(f"從 JSON 文件加載 cookies: {self.cookie_json_file}")
+                with open(self.cookie_json_file, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            # 如果 JSON 不存在，嘗試從 pickle 文件加載
+            elif os.path.exists(self.cookie_file):
+                logger.info(f"從 pickle 文件加載 cookies: {self.cookie_file}")
                 with open(self.cookie_file, 'rb') as f:
                     cookies = pickle.load(f)
                 logger.info(f"已從 {self.cookie_file} 加載 {len(cookies)} 個 cookies")

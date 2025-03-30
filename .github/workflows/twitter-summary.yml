@@ -30,12 +30,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y google-chrome-stable
       
-      - name: Get Twitter cookies
+      - name: Create Twitter cookies from secret
         env:
-          TWITTER_EMAIL: ${{ secrets.TWITTER_EMAIL }}
-          TWITTER_PASSWORD: ${{ secrets.TWITTER_PASSWORD }}
+          TWITTER_COOKIES_JSON: ${{ secrets.COOKIES }}
         run: |
-          python cronjobs/get_twitter_cookies.py
+          echo "$TWITTER_COOKIES_JSON" > twitter_cookies.pkl.json
+          echo "Twitter cookies file created from secret"
       
       - name: Fetch Twitter data
         run: |
