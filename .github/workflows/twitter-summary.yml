@@ -47,7 +47,7 @@ jobs:
       
       - name: Fetch Twitter data
         run: |
-          python cronjobs/test_twitter_client.py
+          python cronjobs/download_x_posts.py
       
       - name: Generate AI summary and send to Discord
         run: |
