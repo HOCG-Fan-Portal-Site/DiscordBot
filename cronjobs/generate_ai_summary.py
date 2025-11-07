@@ -70,6 +70,7 @@ async def main():
         # Send to Discord if requested
         if args.send_discord and config.discord_channel_id:
             from cronjobs.send_webhook import send_message_to_discord
+            from cronjobs.helper.markdown_parser import create_discord_message
             from datetime import datetime
             
             # 取得今天的日期
@@ -80,48 +81,8 @@ async def main():
                 tweets_data = json.load(f)
                 twitter_users_text = ", ".join([f"@{user}" for user in tweets_data.keys()]) if tweets_data else "無監控用戶"
             
-            # 創建主要內容
-            message = {
-                "content": f"### **{today} 過去 {args.hours} 小時推特內容摘要報告**",
-                "embeds": []
-            }
-            
-            # 將 AI 生成的摘要格式化為 Discord 訊息
-            # 注意：Discord 的 embed 描述有字數限制，所以我們將長文本分成多個 embed
-            
-            # 分段處理摘要，每個主要段落作為一個單獨的 embed
-            # 這樣可以避免超過 Discord 的字數限制，並且提高可讀性
-            sections = summary.split("####")
-            
-            # 處理總體摘要部分 (如果存在)
-            if len(sections) > 1:
-                main_summary = sections[0].strip()
-                if main_summary:
-                    message["embeds"].append({
-                        "title": f"過去 {args.hours} 小時推特摘要報告（Hololive 卡牌遊戲相關）",
-                        "description": main_summary,
-                        "color": 5814783,  # 紫色
-                        "footer": {
-                            "text": f"追蹤用戶: {twitter_users_text}"
-                        }
-                    })
-            
-            # 處理各個子標題部分
-            for i, section in enumerate(sections[1:], 1):
-                if not section.strip():
-                    continue
-                    
-                # 分離標題和內容
-                lines = section.strip().split("\n")
-                title = lines[0].strip().strip("*").strip()
-                content = "\n".join(lines[1:]).strip()
-                
-                # 添加為 embed
-                message["embeds"].append({
-                    "title": title,
-                    "description": content,
-                    "color": 5814783  # 紫色
-                })
+            # 使用 markdown_parser 創建 Discord 訊息
+            message = create_discord_message(summary, args.hours, twitter_users_text, today)
             
             # 發送訊息
             logger.info("Sending AI summary to Discord...")
